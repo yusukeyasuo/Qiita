@@ -8,6 +8,16 @@
 
 #import <UIKit/UIKit.h>
 
-@interface FirstViewController : UIViewController
+@interface FirstViewController : UIViewController <UISearchBarDelegate, UITextFieldDelegate, UITableViewDataSource, UITableViewDelegate>
+{
+    UISearchBar *_searchWord;
+    IBOutlet UITableView *_showWord;
+    NSArray *_jsonObject;
+    NSURLConnection *_connection;
+    NSMutableData *_jsonData;
+    UIRefreshControl *_refreshControl;
+    NSURLRequest *_request;
+    NSString *_reqestURL;
+}
 
 @end

@@ -9,5 +9,14 @@
 #import <UIKit/UIKit.h>
 
 @interface NewViewController : UITableViewController
+{
+    NSArray *_jsonObject;
+    NSURLConnection *_connection;
+    NSMutableData *_jsonData;
+    UIRefreshControl *_refreshControl;
+    int _height;
+}
+
+@property (readwrite) int height;
 
 @end

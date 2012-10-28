@@ -8,6 +8,8 @@
 
 #import "AppDelegate.h"
 
+#import "NewViewController.h"
+
 #import "FirstViewController.h"
 
 #import "SecondViewController.h"
@@ -19,9 +21,16 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     UIViewController *viewController1 = [[FirstViewController alloc] initWithNibName:@"FirstViewController" bundle:nil];
+    UINavigationController *navController1 = [[UINavigationController alloc] initWithRootViewController:viewController1];
+    navController1.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
     UIViewController *viewController2 = [[SecondViewController alloc] initWithNibName:@"SecondViewController" bundle:nil];
+    UINavigationController *navController2 = [[UINavigationController alloc] initWithRootViewController:viewController2];
+    navController2.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+    UIViewController *viewController0 = [[NewViewController alloc] initWithNibName:@"NewViewController" bundle:nil];
+    UINavigationController *navController0 = [[UINavigationController alloc] initWithRootViewController:viewController0];
+    navController0.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
     self.tabBarController = [[UITabBarController alloc] init];
-    self.tabBarController.viewControllers = @[viewController1, viewController2];
+    self.tabBarController.viewControllers = @[navController0, navController1, navController2];
     self.window.rootViewController = self.tabBarController;
     [self.window makeKeyAndVisible];
     return YES;

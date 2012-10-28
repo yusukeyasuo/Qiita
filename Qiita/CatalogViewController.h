@@ -9,5 +9,14 @@
 #import <UIKit/UIKit.h>
 
 @interface CatalogViewController : UITableViewController
+{
+    NSString *_searchWord;
+    NSArray *_jsonObject;
+    NSURLConnection *_connection;
+    NSMutableData *_jsonData;
+    UIRefreshControl *_refreshControl;
+}
+
+@property (strong, nonatomic) NSString *searchWord;
 
 @end

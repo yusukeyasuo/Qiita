@@ -8,6 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SecondViewController : UIViewController
+@interface SecondViewController : UIViewController <UITableViewDataSource,UITableViewDelegate>
+{
+    IBOutlet UITableView *showTab;
+    NSArray *_jsonObject;
+    NSURLConnection *_connection;
+    NSMutableData *_jsonData;
+    UIRefreshControl *_refreshControl;
+}
 
 @end

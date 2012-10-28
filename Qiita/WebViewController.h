@@ -8,6 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
-@interface WebViewController : UIViewController
+@interface WebViewController : UIViewController <UIWebViewDelegate>
+{
+    IBOutlet UIWebView *webView;
+    IBOutlet UIActivityIndicatorView *_indicator;
+    UIBarButtonItem *_indicatorButton;
+    UIBarButtonItem *_refreshButton;
+}
+
+@property NSString* _webItem;
+@property NSString* pageTitle;
 
 @end
