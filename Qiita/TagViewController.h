@@ -1,5 +1,5 @@
 //
-//  FirstViewController.h
+//  TagViewController.h
 //  Qiita
 //
 //  Created by yusuke_yasuo on 2012/10/13.
@@ -7,17 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Downloader.h"
 
-@interface FirstViewController : UIViewController <UISearchBarDelegate, UITextFieldDelegate, UITableViewDataSource, UITableViewDelegate>
+@interface TagViewController : UIViewController <UITableViewDataSource,UITableViewDelegate, DownLoaderDelegate>
 {
-    UISearchBar *_searchWord;
-    IBOutlet UITableView *_showWord;
+    IBOutlet UITableView *showTab;
+    NSMutableDictionary *_imageDict;
     NSArray *_jsonObject;
     NSURLConnection *_connection;
     NSMutableData *_jsonData;
     UIRefreshControl *_refreshControl;
-    NSURLRequest *_request;
-    NSString *_reqestURL;
 }
 
 @end

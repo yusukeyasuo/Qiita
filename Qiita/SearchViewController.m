@@ -1,20 +1,21 @@
 //
-//  FirstViewController.m
+//  SearchViewController.m
 //  Qiita
 //
 //  Created by yusuke_yasuo on 2012/10/13.
 //  Copyright (c) 2012年 yusuke_yasuo. All rights reserved.
 //
 
-#import "FirstViewController.h"
+#import "SearchViewController.h"
 #import "WebViewController.h"
 #import "QiitaEntryCell.h"
+#import "ProfileViewController.h"
 
-@interface FirstViewController ()
+@interface SearchViewController ()
 
 @end
 
-@implementation FirstViewController
+@implementation SearchViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -30,6 +31,7 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    _imageDict = [[NSMutableDictionary alloc] init];
     _searchWord = [[UISearchBar alloc] init];
     _searchWord.delegate = self;
     _searchWord.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
@@ -44,16 +46,8 @@
 
 - (void)refresh
 {
-    NSLog(@"refresh");
-    
-    [NSTimer scheduledTimerWithTimeInterval:1.f target:self selector:@selector(endRefresh) userInfo:nil repeats:NO];
-}
-
-- (void)endRefresh
-{
-    _request = [NSURLRequest requestWithURL:[NSURL URLWithString:_reqestURL]];
-    _connection = [[NSURLConnection alloc] initWithRequest:_request delegate:self];
-    [_refreshControl endRefreshing];
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    [self searchWord:_saveSearchWord];
 }
 
 - (void)didReceiveMemoryWarning
@@ -89,15 +83,16 @@
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [_refreshControl endRefreshing];
 }
 
 // 非同期通信 ダウンロード完了
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [_refreshControl endRefreshing];
     NSError *error=nil;
     _jsonObject = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];
-    NSLog(@"jsonObject = %@", [_jsonObject description]);
     [_showWord reloadData];
 }
 
@@ -106,8 +101,24 @@
 {
     [_searchWord resignFirstResponder];
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    [self searchWord:_searchWord.text];
+    _saveSearchWord = _searchWord.text;
+    [self searchWord:_saveSearchWord];
 
+}
+
+- (void)downloaderDidFinish:(Downloader *)downloader
+{
+    [_imageDict setObject:downloader.data forKey:downloader.indexPath];
+    [_showWord reloadData];
+}
+
+- (void)downloaderDidFailed:(Downloader *)downloader withError:(NSError *)error
+{
+    [[[UIAlertView alloc] initWithTitle:@"Error"
+                                message:error.localizedDescription
+                               delegate:nil
+                      cancelButtonTitle:@"OK"
+                      otherButtonTitles:nil] show];
 }
 
 #pragma mark - Table view data source
@@ -126,6 +137,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
+    NSDictionary *user = [keyword objectForKey:@"user"];
     QiitaEntryCell *cell = (QiitaEntryCell *)[tableView dequeueReusableCellWithIdentifier:@"QiitaEntryCell"];
     
     if (!cell) {
@@ -133,38 +146,60 @@
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     
-    NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
+    NSString *imageURL = [user objectForKey:@"profile_image_url"];
+    NSData *data = [_imageDict objectForKey:indexPath];
+    if (data) {
+        cell.profileImage.image = [UIImage imageWithData:data];
+    } else {
+        Downloader *downloader = [[Downloader alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:imageURL]] withIndexPath:indexPath];
+        downloader.delegate = self;
+        [downloader start];
+        cell.profileImage.image = [UIImage imageNamed:@"QiitaTable.png"];
+    }
+    
+    cell.profileImage.layer.cornerRadius = 4.0;
+    cell.profileImage.clipsToBounds = YES;
+    /*
+     [cell.profileImage loadImage:imageURL];
+     */
+    
     NSString *tmp = [keyword objectForKey:@"title"];
-    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:12]
-                       constrainedToSize:CGSizeMake(254, 1000)
+    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:15]
+                       constrainedToSize:CGSizeMake(250, 1000)
                            lineBreakMode:NSLineBreakByWordWrapping];
-    cell.titleLabel.frame = CGRectMake(36.0, 20.0, 254.0, labelSize.height);
+    cell.titleLabel.frame = CGRectMake(40.0, 23.0, 250.0, labelSize.height);
     cell.titleLabel.text = [keyword objectForKey:@"title"];
     
-    cell.createdLabel.frame = CGRectMake(36.0, 24.0+labelSize.height, 254.0, 12.0);
+    cell.createdLabel.frame = CGRectMake(40.0, 27.0+labelSize.height, 250.0, 15.0);
     cell.createdLabel.text = [keyword objectForKey:@"created_at"];
     
-    NSDictionary *user = [keyword objectForKey:@"user"];
     cell.urlnameLabel.text = [user objectForKey:@"url_name"];
-    
-    //UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL: [NSURL URLWithString: imageURL]]];
-    //cell.imageView.image = image;
-    
-    //ImageViewにWeb上の画像を表示する処理をスレッドに登録
-    
-    NSString *imageURL = [user objectForKey:@"profile_image_url"];
-    [cell.profileImage loadImage:imageURL];
+    cell.urlnameLabel.userInteractionEnabled = YES;
+    [cell.urlnameLabel addGestureRecognizer:
+     [[UITapGestureRecognizer alloc]
+      initWithTarget:self action:@selector(leftAction:)]];
     
     return cell;
+}
+
+- (void)leftAction: (UITapGestureRecognizer *)sender{
+    CGPoint pos = [sender locationInView:_showWord];
+    NSIndexPath *indexPath = [_showWord indexPathForRowAtPoint:pos];
+    NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
+    NSDictionary *user = [keyword objectForKey:@"user"];
+    
+    ProfileViewController *profileController = [[ProfileViewController alloc] initWithNibName:@"ProfileViewController" bundle:nil];
+    profileController.name = [user objectForKey:@"url_name"];
+    [self.navigationController pushViewController:profileController animated:YES];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
     NSString *tmp = [keyword objectForKey:@"title"];
-    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:12]
-                       constrainedToSize:CGSizeMake(254, 1000)
+    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:15]
+                       constrainedToSize:CGSizeMake(250, 1000)
                            lineBreakMode:NSLineBreakByWordWrapping];
-    return labelSize.height + 44.0f;
+    return labelSize.height + 45.0f;
 }
 
 

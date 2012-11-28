@@ -1,28 +1,31 @@
 //
-//  CatalogViewController.m
+//  HomeViewController.m
 //  Qiita
 //
-//  Created by yusuke_yasuo on 2012/10/13.
+//  Created by yusuke_yasuo on 2012/11/24.
 //  Copyright (c) 2012年 yusuke_yasuo. All rights reserved.
 //
 
-#import "CatalogViewController.h"
+#import "HomeViewController.h"
 #import "WebViewController.h"
 #import "QiitaEntryCell.h"
 #import "ProfileViewController.h"
+#import "TokensViewController.h"
 #import "PostViewController.h"
+#import "SaveToken.h"
 
-@interface CatalogViewController ()
+@interface HomeViewController ()
 
 @end
 
-@implementation CatalogViewController
-@synthesize searchWord = _searchWord;
+@implementation HomeViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
+        self.title = @"ホーム";
+        self.tabBarItem.image = [UIImage imageNamed:@"home"];
     }
     return self;
 }
@@ -30,20 +33,51 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    _loading = 1;
     _imageDict = [[NSMutableDictionary alloc] init];
-    self.title = [NSString stringWithFormat:@"%@", _searchWord];
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    [self searchNewItem];
+    
+    // 投稿ボタンの表示
+    UIBarButtonItem *postButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCompose
+                                                                               target:self
+                                                                               action:@selector(post_entry)];
+    [self.navigationItem setRightBarButtonItem:postButton animated:YES];
+    
+    // アカウントボタンの表示
+    UIBarButtonItem *acountButton = [[UIBarButtonItem alloc] initWithTitle:@"アカウント"
+                                                                     style:UIBarButtonItemStylePlain
+                                                                    target:self
+                                                                    action:@selector(edit_token)];
+    [self.navigationItem setLeftBarButtonItem:acountButton animated:YES];
     
     _refreshControl = [[UIRefreshControl alloc] init];
     [_refreshControl addTarget:self action:@selector(refresh) forControlEvents:UIControlEventValueChanged];
     [self.tableView addSubview:_refreshControl];
-    
-    // 投稿ボタンの表示
-    UIBarButtonItem *postButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCompose
-                                                                                target:self
-                                                                                action:@selector(post_entry)];
-    [self.navigationItem setRightBarButtonItem:postButton animated:YES];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [[SaveToken sharedManager] load];
+    if (![SaveToken sharedManager].tokens.count) {
+        UIViewController *tokensController = [[TokensViewController alloc] initWithNibName:@"TokensViewController" bundle:nil];
+        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:tokensController];
+        [self presentViewController:navController animated:YES completion:nil];
+
+    } else {
+        if (!_jsonObject) {
+            _jsonObject = [[NSMutableArray alloc] init];
+            [self searchNewItem];
+            // インジケーターの表示
+            [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+        }
+        
+    }
+}
+
+- (void)edit_token
+{
+    UIViewController *tokensController = [[TokensViewController alloc] initWithNibName:@"TokensViewController" bundle:nil];
+    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:tokensController];
+    [self presentViewController:navController animated:YES completion:nil];
 
 }
 
@@ -52,7 +86,7 @@
     UIViewController *postController = [[PostViewController alloc] initWithNibName:@"PostViewController" bundle:nil];
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:postController];
     [self presentViewController:navController animated:YES completion:nil];
-    
+
 }
 
 - (void)refresh
@@ -63,8 +97,18 @@
 
 - (void)searchNewItem
 {
-    NSString *req = [NSString stringWithFormat:@"https://qiita.com/api/v1/tags/%@/items?page=1&per_page=20", _searchWord];
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:req]];
+    NSString *url = [NSString stringWithFormat:@"https://qiita.com/api/v1/items/?page=1&per_page=20"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+    _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+    _page = 1;
+}
+
+// 続きを読み込む
+- (void)add_row
+{
+    _page++;
+    NSString *url = [NSString stringWithFormat:@"https://qiita.com/api/v1/items/?page=%d&per_page=20", _page];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
     _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 }
 
@@ -73,7 +117,6 @@
 {
     // データを初期化
     _jsonData = [[NSMutableData alloc] initWithData:0];
-    // インジケーターの表示
 }
 
 // 非同期通信 ダウンロード中
@@ -94,16 +137,27 @@
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-    [_refreshControl endRefreshing];
     NSError *error=nil;
-    _jsonObject = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];
+    if (_page == 1) {
+        // 1ページ目の処理
+        _jsonObject = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];;
+        [_refreshControl endRefreshing];
+    } else {
+        // 2ページ目以降の処理
+        NSArray *jo = [[NSArray alloc] init];
+        jo = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];
+        NSMutableArray *ma = [[NSMutableArray alloc] init];
+        for (NSDictionary* i in _jsonObject) {
+            [ma addObject:i];
+        }
+        for (NSDictionary* i in jo) {
+            [ma addObject:i];
+        }
+        _jsonObject = [[NSMutableArray alloc] init];
+        _jsonObject = ma;
+        _loading = 1;
+    }
     [self.tableView reloadData];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (void)downloaderDidFinish:(Downloader *)downloader
@@ -121,20 +175,19 @@
                       otherButtonTitles:nil] show];
 }
 
-#pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    // Return the number of sections.
     return 1;
 }
 
+//行数を決めるメソッド　※ここでは(mangalist.plist)のitem数をカウントした行数分だけ値を返す。
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    // Return the number of rows in the section.
     return [_jsonObject count];
 }
 
+//表示する内容(セル)を答えるメソッド[tableView:cellForRowAtIndexPath:]
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
@@ -156,11 +209,11 @@
         [downloader start];
         cell.profileImage.image = [UIImage imageNamed:@"QiitaTable.png"];
     }
-    
+
     cell.profileImage.layer.cornerRadius = 4.0;
     cell.profileImage.clipsToBounds = YES;
-    /*
-     [cell.profileImage loadImage:imageURL];
+     /*
+    [cell.profileImage loadImage:imageURL];
      */
     
     NSString *tmp = [keyword objectForKey:@"title"];
@@ -178,6 +231,12 @@
     [cell.urlnameLabel addGestureRecognizer:
      [[UITapGestureRecognizer alloc]
       initWithTarget:self action:@selector(leftAction:)]];
+    
+    if (indexPath.row == (_page * 20 - 1) && _loading == 1) {
+        [self add_row];
+        _loading = 0;
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    }
     
     return cell;
 }
@@ -203,50 +262,20 @@
 }
 
 /*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
+ // Override to support conditional editing of the table view.
+ - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+ {
+ // Return NO if you do not want the specified item to be editable.
+ return YES;
+ }
+ */
 
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-    else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
     NSDictionary *dics = [_jsonObject objectAtIndex:indexPath.row];
     NSString *url = [dics objectForKey:@"url"];
     NSString *pageTitle = [dics objectForKey:@"title"];
@@ -255,7 +284,12 @@
     webController._webItem = url;
     webController.pageTitle = pageTitle;
     [self.navigationController pushViewController:webController animated:YES];
+}
 
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 
 @end

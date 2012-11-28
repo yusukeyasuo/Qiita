@@ -7,12 +7,12 @@
 //
 
 #import "AppDelegate.h"
-
-#import "NewViewController.h"
-
-#import "FirstViewController.h"
-
-#import "SecondViewController.h"
+#import "HomeViewController.h"
+#import "StockViewController.h"
+#import "PostViewController.h"
+#import "SearchViewController.h"
+#import "TagViewController.h"
+#import "SaveToken.h"
 
 @implementation AppDelegate
 
@@ -20,17 +20,24 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
-    UIViewController *viewController1 = [[FirstViewController alloc] initWithNibName:@"FirstViewController" bundle:nil];
-    UINavigationController *navController1 = [[UINavigationController alloc] initWithRootViewController:viewController1];
-    navController1.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
-    UIViewController *viewController2 = [[SecondViewController alloc] initWithNibName:@"SecondViewController" bundle:nil];
-    UINavigationController *navController2 = [[UINavigationController alloc] initWithRootViewController:viewController2];
-    navController2.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
-    UIViewController *viewController0 = [[NewViewController alloc] initWithNibName:@"NewViewController" bundle:nil];
+    UIViewController *viewController0 = [[HomeViewController alloc] initWithNibName:@"HomeViewController" bundle:nil];
     UINavigationController *navController0 = [[UINavigationController alloc] initWithRootViewController:viewController0];
     navController0.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+    
+    UIViewController *viewController1 = [[StockViewController alloc] initWithNibName:@"StockViewController" bundle:nil];
+    UINavigationController *navController1 = [[UINavigationController alloc] initWithRootViewController:viewController1];
+    navController1.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+    
+    UIViewController *viewController2 = [[SearchViewController alloc] initWithNibName:@"SearchViewController" bundle:nil];
+    UINavigationController *navController2 = [[UINavigationController alloc] initWithRootViewController:viewController2];
+    navController2.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+
+    UIViewController *viewController3 = [[TagViewController alloc] initWithNibName:@"TagViewController" bundle:nil];
+    UINavigationController *navController3 = [[UINavigationController alloc] initWithRootViewController:viewController3];
+    navController3.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+    
     self.tabBarController = [[UITabBarController alloc] init];
-    self.tabBarController.viewControllers = @[navController0, navController1, navController2];
+    self.tabBarController.viewControllers = @[navController0, navController1, navController2, navController3];
     self.window.rootViewController = self.tabBarController;
     [self.window makeKeyAndVisible];
     return YES;
@@ -55,7 +62,7 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    [[SaveToken sharedManager] load];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

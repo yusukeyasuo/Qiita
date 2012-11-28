@@ -7,11 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "UIAsyncImageView.h"
 
 @interface QiitaEntryCell : UITableViewCell
 {
-    UIAsyncImageView *_profileImage;
+    UIImageView *_profileImage;
     UILabel *_urlnameLabel;
     UILabel *_titleLabel;
     UILabel *_createdLabel;
@@ -20,6 +19,6 @@
 @property (nonatomic, strong) UILabel *urlnameLabel;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *createdLabel;
-@property (nonatomic, strong) UIAsyncImageView *profileImage;
+@property (nonatomic, strong) UIImageView *profileImage;
 
 @end

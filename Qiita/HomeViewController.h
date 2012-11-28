@@ -1,8 +1,8 @@
 //
-//  CatalogViewController.h
+//  HomeViewController.h
 //  Qiita
 //
-//  Created by yusuke_yasuo on 2012/10/13.
+//  Created by yusuke_yasuo on 2012/11/24.
 //  Copyright (c) 2012年 yusuke_yasuo. All rights reserved.
 //
 
@@ -10,16 +10,17 @@
 #import "QuartzCore/QuartzCore.h"
 #import "Downloader.h"
 
-@interface CatalogViewController : UITableViewController <DownLoaderDelegate>
+
+@interface HomeViewController : UITableViewController <NSURLConnectionDataDelegate, DownLoaderDelegate>
 {
-    NSString *_searchWord;
-    NSArray *_jsonObject;
+    NSMutableArray *_jsonObject;
     NSURLConnection *_connection;
     NSMutableData *_jsonData;
     UIRefreshControl *_refreshControl;
     NSMutableDictionary *_imageDict;
+    int _page;
+    int _loading;
 }
 
-@property (strong, nonatomic) NSString *searchWord;
 
 @end

@@ -9,6 +9,7 @@
 #import "NewViewController.h"
 #import "WebViewController.h"
 #import "QiitaEntryCell.h"
+#import "ProfileViewController.h"
 
 @interface NewViewController ()
 
@@ -22,7 +23,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         self.title = @"新着";
-        self.tabBarItem.image = [UIImage imageNamed:@"home"];
+        self.tabBarItem.image = [UIImage imageNamed:@"new"];
     }
     return self;
 }
@@ -71,6 +72,7 @@
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [_refreshControl endRefreshing];
 }
 
 // 非同期通信 ダウンロード完了
@@ -97,6 +99,8 @@
 //表示する内容(セル)を答えるメソッド[tableView:cellForRowAtIndexPath:]
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
+    NSDictionary *user = [keyword objectForKey:@"user"];
     QiitaEntryCell *cell = (QiitaEntryCell *)[tableView dequeueReusableCellWithIdentifier:@"QiitaEntryCell"];
     
     if (!cell) {
@@ -104,38 +108,48 @@
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     
-    NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
+    NSString *imageURL = [user objectForKey:@"profile_image_url"];
+    cell.profileImage.layer.cornerRadius = 4.0;
+    cell.profileImage.clipsToBounds = YES;
+    //[cell.profileImage loadImage:imageURL];
+    
     NSString *tmp = [keyword objectForKey:@"title"];
-    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:12]
-                       constrainedToSize:CGSizeMake(254, 1000)
+    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:15]
+                       constrainedToSize:CGSizeMake(250, 1000)
                            lineBreakMode:NSLineBreakByWordWrapping];
-    cell.titleLabel.frame = CGRectMake(36.0, 20.0, 254.0, labelSize.height);
+    cell.titleLabel.frame = CGRectMake(40.0, 23.0, 250.0, labelSize.height);
     cell.titleLabel.text = [keyword objectForKey:@"title"];
     
-    cell.createdLabel.frame = CGRectMake(36.0, 24.0+labelSize.height, 254.0, 12.0);
+    cell.createdLabel.frame = CGRectMake(40.0, 27.0+labelSize.height, 250.0, 15.0);
     cell.createdLabel.text = [keyword objectForKey:@"created_at"];
     
-    NSDictionary *user = [keyword objectForKey:@"user"];
     cell.urlnameLabel.text = [user objectForKey:@"url_name"];
+    cell.urlnameLabel.userInteractionEnabled = YES;
+    [cell.urlnameLabel addGestureRecognizer:
+     [[UITapGestureRecognizer alloc]
+      initWithTarget:self action:@selector(leftAction:)]];
     
-    //UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL: [NSURL URLWithString: imageURL]]];
-    //cell.imageView.image = image;
+        return cell;
+}
+
+- (void)leftAction: (UITapGestureRecognizer *)sender{
+    CGPoint pos = [sender locationInView:self.tableView];
+    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:pos];
+    NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
+    NSDictionary *user = [keyword objectForKey:@"user"];
     
-    //ImageViewにWeb上の画像を表示する処理をスレッドに登録
-    
-    NSString *imageURL = [user objectForKey:@"profile_image_url"];
-    [cell.profileImage loadImage:imageURL];
-    
-    return cell;
+    ProfileViewController *profileController = [[ProfileViewController alloc] initWithNibName:@"ProfileViewController" bundle:nil];
+    profileController.name = [user objectForKey:@"url_name"];
+    [self.navigationController pushViewController:profileController animated:YES];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     NSDictionary *keyword = [_jsonObject objectAtIndex:indexPath.row];
     NSString *tmp = [keyword objectForKey:@"title"];
-    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:12]
+    CGSize labelSize = [tmp sizeWithFont:[UIFont systemFontOfSize:15]
                        constrainedToSize:CGSizeMake(254, 1000)
                            lineBreakMode:NSLineBreakByWordWrapping];
-    return labelSize.height + 44.0f;
+    return labelSize.height + 45.0f;
 }
 
 /*
@@ -152,7 +166,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [tableView deselectRowAtIndexPath:indexPath animated:YES]; // 選択状態の解除。
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     NSDictionary *dics = [_jsonObject objectAtIndex:indexPath.row];
     NSString *url = [dics objectForKey:@"url"];
     NSString *pageTitle = [dics objectForKey:@"title"];

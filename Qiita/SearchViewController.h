@@ -1,5 +1,5 @@
 //
-//  CatalogViewController.h
+//  SearchViewController.h
 //  Qiita
 //
 //  Created by yusuke_yasuo on 2012/10/13.
@@ -10,16 +10,18 @@
 #import "QuartzCore/QuartzCore.h"
 #import "Downloader.h"
 
-@interface CatalogViewController : UITableViewController <DownLoaderDelegate>
+@interface SearchViewController : UIViewController <UISearchBarDelegate, UITextFieldDelegate, UITableViewDataSource, UITableViewDelegate, DownLoaderDelegate>
 {
-    NSString *_searchWord;
+    UISearchBar *_searchWord;
+    IBOutlet UITableView *_showWord;
     NSArray *_jsonObject;
     NSURLConnection *_connection;
     NSMutableData *_jsonData;
     UIRefreshControl *_refreshControl;
+    NSURLRequest *_request;
+    NSString *_reqestURL;
+    NSString *_saveSearchWord;
     NSMutableDictionary *_imageDict;
 }
-
-@property (strong, nonatomic) NSString *searchWord;
 
 @end
