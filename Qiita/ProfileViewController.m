@@ -8,6 +8,8 @@
 
 #import "ProfileViewController.h"
 #import "QiitaEntryCell.h"
+#import "CatalogViewController.h"
+#import "UserViewController.h"
 
 @interface ProfileViewController ()
 
@@ -130,7 +132,6 @@
         QiitaEntryCell *cell = (QiitaEntryCell *)[tableView dequeueReusableCellWithIdentifier:@"QiitaEntryCell"];
         if (!cell) {
             cell = [[QiitaEntryCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"QiitaEntryCell"];
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         }
         
         NSString *tmp = [_jsonObject objectForKey:@"description"];
@@ -162,6 +163,7 @@
             Downloader *downloader = [[Downloader alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:imageURL]] withIndexPath:indexPath];
             downloader.delegate = self;
             [downloader start];
+            cell.profileImage.image = [UIImage imageNamed:@"QiitaTable.png"];
         }
         
         cell.profileImage.layer.cornerRadius = 4.0;
@@ -174,7 +176,9 @@
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            if (indexPath.row != 2) {
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            }
         }
         
         if (indexPath.row == 0) {
@@ -264,13 +268,20 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    // Navigation logic may go here. Create and push another view controller.
-    /*
-     <#DetailViewController#> *detailViewController = [[<#DetailViewController#> alloc] initWithNibName:@"<#Nib name#>" bundle:nil];
-     // ...
-     // Pass the selected object to the new view controller.
-     [self.navigationController pushViewController:detailViewController animated:YES];
-     */
+    if (indexPath.section == 1) {
+        if (indexPath.row == 0) {
+            CatalogViewController *catalogController = [[CatalogViewController alloc] initWithNibName:@"CatalogViewController" bundle:nil];
+            catalogController.page_title = [NSString stringWithFormat:@"%@の投稿", _name];
+            catalogController.api_url = [NSString stringWithFormat:@"https://qiita.com/api/v1/users/%@/items?page=%%d&per_page=20", _name];
+            [self.navigationController pushViewController:catalogController animated:YES];
+        } else if (indexPath.row == 1) {
+            UserViewController *userController = [[UserViewController alloc] initWithNibName:@"UserViewController" bundle:nil];
+            userController.name = [NSString stringWithFormat:@"%@がフォロー", _name];
+            userController.api_url = [NSString stringWithFormat:@"https://qiita.com/api/v1/users/%@/following_users", _name];
+            [self.navigationController pushViewController:userController animated:YES];
+        }
+    }
+
 }
 
 @end

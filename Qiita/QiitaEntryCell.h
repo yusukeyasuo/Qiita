@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface QiitaEntryCell : UITableViewCell
 {
@@ -14,11 +15,15 @@
     UILabel *_urlnameLabel;
     UILabel *_titleLabel;
     UILabel *_createdLabel;
+    UILabel *_tagLabel;
+    UILabel *_tag2Label;
 }
 
+@property (nonatomic, strong) UIImageView *profileImage;
 @property (nonatomic, strong) UILabel *urlnameLabel;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *createdLabel;
-@property (nonatomic, strong) UIImageView *profileImage;
+@property (nonatomic, strong) UILabel *tagLabel;
+@property (nonatomic, strong) UILabel *tag2Label;
 
 @end

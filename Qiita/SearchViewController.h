@@ -22,6 +22,8 @@
     NSString *_reqestURL;
     NSString *_saveSearchWord;
     NSMutableDictionary *_imageDict;
+    int _page;
+    int _loading;
 }
 
 @end

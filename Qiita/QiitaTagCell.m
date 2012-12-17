@@ -22,6 +22,8 @@
     // tagImageの作成
     UIImage *image = [UIImage imageNamed:@"QiitaTable.png"];
     _tagImage = [[UIImageView alloc] initWithImage:image];
+    [[_tagImage layer] setCornerRadius:4.0];
+    [_tagImage setClipsToBounds:YES];
     [self.contentView addSubview:_tagImage];
     
     // tagNameLabelの作成

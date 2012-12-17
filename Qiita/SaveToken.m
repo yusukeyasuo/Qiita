@@ -94,7 +94,7 @@ static SaveToken *_sharedInstance = nil;
 #pragma mark
 
 // Tokenの永続化
-#pragma mark -- アラームの永続化 --
+#pragma mark 
 - (void)save
 {
     // _tokens

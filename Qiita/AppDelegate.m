@@ -13,6 +13,7 @@
 #import "SearchViewController.h"
 #import "TagViewController.h"
 #import "SaveToken.h"
+#import "FollowingTag.h"
 
 @implementation AppDelegate
 
@@ -20,6 +21,7 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
+
     UIViewController *viewController0 = [[HomeViewController alloc] initWithNibName:@"HomeViewController" bundle:nil];
     UINavigationController *navController0 = [[UINavigationController alloc] initWithRootViewController:viewController0];
     navController0.navigationBar.tintColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
@@ -63,6 +65,10 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     [[SaveToken sharedManager] load];
+    [[FollowingTag sharedManager] load];
+    if ([SaveToken sharedManager].current_token != nil) {
+        [[FollowingTag sharedManager] update_tags:nil];
+    }
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

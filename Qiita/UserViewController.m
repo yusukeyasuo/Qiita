@@ -1,35 +1,36 @@
 //
-//  TagViewController.m
+//  UserViewController.m
 //  Qiita
 //
-//  Created by yusuke_yasuo on 2012/10/13.
+//  Created by yusuke_yasuo on 2012/12/04.
 //  Copyright (c) 2012年 yusuke_yasuo. All rights reserved.
 //
 
-#import "TagViewController.h"
-#import "CatalogViewController.h"
-#import "QiitaTagCell.h"
+#import "UserViewController.h"
 #import "PostViewController.h"
+#import "QiitaTagCell.h"
+#import "ProfileViewController.h"
 
-@interface TagViewController ()
+@interface UserViewController ()
 
 @end
 
-@implementation TagViewController
+@implementation UserViewController
+@synthesize name = _name;
+@synthesize api_url = _api_url;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        self.title = @"タグ";
-        self.tabBarItem.image = [UIImage imageNamed:@"tag"];
     }
     return self;
 }
-							
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.title = _name;
     _imageDict = [[NSMutableDictionary alloc] init];
 	// Do any additional setup after loading the view, typically from a nib.
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
@@ -37,14 +38,14 @@
     
     _refreshControl = [[UIRefreshControl alloc] init];
     [_refreshControl addTarget:self action:@selector(refresh) forControlEvents:UIControlEventValueChanged];
-    [showTab addSubview:_refreshControl];
+    [self.tableView addSubview:_refreshControl];
     
     // 投稿ボタンの表示
     UIBarButtonItem *postButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCompose
                                                                                 target:self
                                                                                 action:@selector(post_entry)];
     [self.navigationItem setRightBarButtonItem:postButton animated:YES];
-
+    
 }
 
 - (void)post_entry
@@ -63,7 +64,7 @@
 
 - (void)searchTab
 {
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://qiita.com/api/v1/tags/"]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:_api_url]];
     _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 }
 
@@ -96,7 +97,7 @@
     [_refreshControl endRefreshing];
     NSError *error=nil;
     _jsonObject = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];
-    [showTab reloadData];
+    [self.tableView reloadData];
 }
 
 - (void)didReceiveMemoryWarning
@@ -108,7 +109,7 @@
 - (void)downloaderDidFinish:(Downloader *)downloader
 {
     [_imageDict setObject:downloader.data forKey:downloader.indexPath];
-    [showTab reloadData];
+    [self.tableView reloadData];
 }
 
 - (void)downloaderDidFailed:(Downloader *)downloader withError:(NSError *)error
@@ -141,7 +142,7 @@
     }
     
     
-    NSString *imageURL = [tagDict objectForKey:@"icon_url"];
+    NSString *imageURL = [tagDict objectForKey:@"profile_image_url"];
     NSData *data = [_imageDict objectForKey:indexPath];
     if (data) {
         cell.tagImage.image = [UIImage imageWithData:data];
@@ -152,7 +153,7 @@
         cell.tagImage.image = [UIImage imageNamed:@"QiitaTable.png"];
     }
     
-    cell.tagNameLabel.text = [tagDict objectForKey:@"name"];
+    cell.tagNameLabel.text = [tagDict objectForKey:@"url_name"];
     
     return cell;
 }
@@ -201,12 +202,9 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    CatalogViewController *catalogController = [[CatalogViewController alloc] initWithNibName:@"CatalogViewController" bundle:nil];
-    NSDictionary *tagDict = [_jsonObject objectAtIndex:indexPath.row];
-    catalogController.page_title = [tagDict objectForKey:@"name"];
-    catalogController.api_url = [NSString stringWithFormat:@"https://qiita.com/api/v1/tags/%@/items?page=%%d&per_page=20", [tagDict objectForKey:@"name"]];
-    [self.navigationController pushViewController:catalogController animated:YES];
+    ProfileViewController *profileController = [[ProfileViewController alloc] initWithNibName:@"ProfileViewController" bundle:nil];
+    profileController.name = [[_jsonObject objectAtIndex:indexPath.row] objectForKey:@"url_name"];
+    [self.navigationController pushViewController:profileController animated:YES];
 }
 
 @end
-

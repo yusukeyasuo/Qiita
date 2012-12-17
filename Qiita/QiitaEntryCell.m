@@ -9,10 +9,12 @@
 #import "QiitaEntryCell.h"
 
 @implementation QiitaEntryCell
+@synthesize profileImage = _profileImage;
 @synthesize urlnameLabel = _urlnameLabel;
 @synthesize titleLabel = _titleLabel;
 @synthesize createdLabel = _createdLabel;
-@synthesize profileImage = _profileImage;
+@synthesize tagLabel = _tagLabel;
+@synthesize tag2Label = _tag2Label;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -22,9 +24,7 @@
     }
     
     // profileImageの作成
-    UIImage *image = [UIImage imageNamed:@"QiitaTable.png"];
-    //_profileImage = [[UIAsyncImageView alloc] initWithImage:image];
-    _profileImage = [[UIImageView alloc] initWithImage:image];
+    _profileImage = [[UIImageView alloc] init];
     [self.contentView addSubview:_profileImage];
     
     // urlnameLabelの作成
@@ -52,6 +52,28 @@
     _createdLabel.backgroundColor = [UIColor clearColor];
     [self.contentView addSubview:_createdLabel];
     
+    // tagLabelの作成
+    _tagLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _tagLabel.font = [UIFont systemFontOfSize:15.0f];
+    _tagLabel.textColor = [UIColor whiteColor];
+    _tagLabel.highlightedTextColor = [UIColor whiteColor];
+    _tagLabel.backgroundColor = [UIColor lightGrayColor];
+    _tagLabel.textAlignment = NSTextAlignmentCenter;
+    [[_tagLabel layer] setCornerRadius:4.0];
+    [_tagLabel setClipsToBounds:YES];
+    [self.contentView addSubview:_tagLabel];
+    
+    // tag2Labelの作成
+    _tag2Label = [[UILabel alloc] initWithFrame:CGRectZero];
+    _tag2Label.font = [UIFont systemFontOfSize:15.0f];
+    _tag2Label.textColor = [UIColor whiteColor];
+    _tag2Label.highlightedTextColor = [UIColor whiteColor];
+    _tag2Label.backgroundColor = [UIColor lightGrayColor];
+    _tag2Label.textAlignment = NSTextAlignmentCenter;
+    [[_tag2Label layer] setCornerRadius:4.0];
+    [_tag2Label setClipsToBounds:YES];
+    [self.contentView addSubview:_tag2Label];
+    
     return self;
 }
 
@@ -70,23 +92,9 @@
     CGRect  bounds;
     bounds = self.contentView.bounds;
     
-    // urlnameLabelのレイアウト
-    rect.origin.x = 40.0f;
-    rect.origin.y = 4.0f;
-    rect.size.width = 250.0f;
-    rect.size.height = 16.0f;
-    _urlnameLabel.frame = rect;
-    
     // titleLabelのレイアウト
     _titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _titleLabel.numberOfLines = 0;
-    
-    // createdLabelのレイアウト
-    /*rect.origin.x = 36.0f;
-    rect.origin.y = CGRectGetMaxY(_titleLabel.frame) + 4.0f;
-    rect.size.width = 254.0f;
-    rect.size.height = 12.0f;
-    _titleLabel.frame = rect;*/
 }
 
 

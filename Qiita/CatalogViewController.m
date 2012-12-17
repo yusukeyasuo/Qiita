@@ -11,13 +11,15 @@
 #import "QiitaEntryCell.h"
 #import "ProfileViewController.h"
 #import "PostViewController.h"
+#import "FollowingTag.h"
 
 @interface CatalogViewController ()
 
 @end
 
 @implementation CatalogViewController
-@synthesize searchWord = _searchWord;
+@synthesize page_title = _page_title;
+@synthesize api_url = _api_url;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -30,8 +32,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    _imageDict = [[NSMutableDictionary alloc] init];
-    self.title = [NSString stringWithFormat:@"%@", _searchWord];
+    _loading = 1;
+    self.title = [NSString stringWithFormat:@"%@", _page_title];
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     [self searchNewItem];
     
@@ -45,6 +47,11 @@
                                                                                 action:@selector(post_entry)];
     [self.navigationItem setRightBarButtonItem:postButton animated:YES];
 
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [self.navigationController setToolbarHidden:YES animated:NO];
 }
 
 - (void)post_entry
@@ -61,12 +68,25 @@
     [self searchNewItem];
 }
 
+// 1ページ目を読み込む
 - (void)searchNewItem
 {
-    NSString *req = [NSString stringWithFormat:@"https://qiita.com/api/v1/tags/%@/items?page=1&per_page=20", _searchWord];
+    NSString *req = [NSString stringWithFormat:_api_url, 1];
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:req]];
     _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+    _page = 1;
+    _imageDict = [[NSMutableDictionary alloc] init];
 }
+
+// 続きを読み込む
+- (void)add_row
+{
+    _page++;
+    NSString *url = [NSString stringWithFormat: _api_url, _page];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+    _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+}
+
 
 // 非同期通信 ヘッダーが返ってきた
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
@@ -96,7 +116,25 @@
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     [_refreshControl endRefreshing];
     NSError *error=nil;
-    _jsonObject = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];
+    if (_page == 1) {
+        // 1ページ目の処理
+        _jsonObject = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];;
+        [_refreshControl endRefreshing];
+    } else {
+        // 2ページ目以降の処理
+        NSArray *jo = [[NSArray alloc] init];
+        jo = [NSJSONSerialization JSONObjectWithData:_jsonData options:NSJSONReadingAllowFragments error:&error];
+        NSMutableArray *ma = [[NSMutableArray alloc] init];
+        for (NSDictionary* i in _jsonObject) {
+            [ma addObject:i];
+        }
+        for (NSDictionary* i in jo) {
+            [ma addObject:i];
+        }
+        _jsonObject = [[NSMutableArray alloc] init];
+        _jsonObject = ma;
+        _loading = 1;
+    }
     [self.tableView reloadData];
 }
 
@@ -114,11 +152,7 @@
 
 - (void)downloaderDidFailed:(Downloader *)downloader withError:(NSError *)error
 {
-    [[[UIAlertView alloc] initWithTitle:@"Error"
-                                message:error.localizedDescription
-                               delegate:nil
-                      cancelButtonTitle:@"OK"
-                      otherButtonTitles:nil] show];
+    NSLog(@"%@", error);
 }
 
 #pragma mark - Table view data source
@@ -173,11 +207,62 @@
     cell.createdLabel.frame = CGRectMake(40.0, 27.0+labelSize.height, 250.0, 15.0);
     cell.createdLabel.text = [keyword objectForKey:@"created_at"];
     
+    CGSize urlnameLabelSize = [[user objectForKey:@"url_name"] sizeWithFont:[UIFont systemFontOfSize:15]
+                                                          constrainedToSize:CGSizeMake(250, 1000)
+                                                              lineBreakMode:NSLineBreakByWordWrapping];
+    cell.urlnameLabel.frame = CGRectMake(40.0, 4.0, urlnameLabelSize.width + 15.0, 16.0);
     cell.urlnameLabel.text = [user objectForKey:@"url_name"];
     cell.urlnameLabel.userInteractionEnabled = YES;
     [cell.urlnameLabel addGestureRecognizer:
      [[UITapGestureRecognizer alloc]
       initWithTarget:self action:@selector(leftAction:)]];
+    
+    NSArray *tags = [keyword objectForKey:@"tags"];
+    BOOL flg = false;
+    for (NSDictionary *dict in [FollowingTag sharedManager].tags) {
+        if ([[[tags objectAtIndex:0] objectForKey:@"name"] isEqualToString:[dict objectForKey:@"name"]]) {
+            flg = true;
+        }
+    }
+    CGSize tagLabelSize = [[[tags objectAtIndex:0] objectForKey:@"name"] sizeWithFont:[UIFont systemFontOfSize:15]
+                                                                    constrainedToSize:CGSizeMake(250, 1000)
+                                                                        lineBreakMode:NSLineBreakByWordWrapping];
+    cell.tagLabel.frame = CGRectMake(cell.urlnameLabel.frame.origin.x + cell.urlnameLabel.frame.size.width, 4.0, tagLabelSize.width + 10.0, 16.0);
+    cell.tagLabel.text = [[tags objectAtIndex:0] objectForKey:@"name"];
+    if (flg) {
+        cell.tagLabel.backgroundColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+    } else {
+        cell.tagLabel.backgroundColor = [UIColor lightGrayColor];
+    }
+    
+    if (tags.count > 1) {
+        BOOL flg = false;
+        for (NSDictionary *dict in [FollowingTag sharedManager].tags) {
+            if ([[[tags objectAtIndex:1] objectForKey:@"name"] isEqualToString:[dict objectForKey:@"name"]]) {
+                flg = true;
+            }
+        }
+        CGSize tag2LabelSize = [[[tags objectAtIndex:1] objectForKey:@"name"] sizeWithFont:[UIFont systemFontOfSize:15]
+                                                                         constrainedToSize:CGSizeMake(250, 1000)
+                                                                             lineBreakMode:NSLineBreakByWordWrapping];
+        cell.tag2Label.frame = CGRectMake(cell.tagLabel.frame.origin.x + cell.tagLabel.frame.size.width + 10.0, 4.0, tag2LabelSize.width + 10.0, 16.0);
+        cell.tag2Label.text = [[tags objectAtIndex:1] objectForKey:@"name"];
+        if (flg) {
+            cell.tag2Label.backgroundColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+        } else {
+            cell.tag2Label.backgroundColor = [UIColor lightGrayColor];
+        }
+    } else {
+        cell.tag2Label.text = @"";
+        cell.tag2Label.backgroundColor = [UIColor clearColor];
+    }
+
+    
+    if (indexPath.row == (_page * 20 - 1) && _loading == 1) {
+        [self add_row];
+        _loading = 0;
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    }
     
     return cell;
 }
@@ -202,44 +287,14 @@
     return labelSize.height + 45.0f;
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+// urlnameLabelのwidthの設定
+- (CGFloat)labelWidth:(NSString *)urlname
 {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+    CGSize labelSize = [urlname sizeWithFont:[UIFont systemFontOfSize:15]
+                           constrainedToSize:CGSizeMake(250, 1000)
+                               lineBreakMode:NSLineBreakByWordWrapping];
+    return labelSize.width;
 }
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-    else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 #pragma mark - Table view delegate
 
@@ -250,10 +305,13 @@
     NSDictionary *dics = [_jsonObject objectAtIndex:indexPath.row];
     NSString *url = [dics objectForKey:@"url"];
     NSString *pageTitle = [dics objectForKey:@"title"];
+    NSString *uuid = [dics objectForKey:@"uuid"];
     
     WebViewController *webController = [[WebViewController alloc] initWithNibName:@"WebViewController" bundle:nil];
     webController._webItem = url;
     webController.pageTitle = pageTitle;
+    webController.uuid = uuid;
+    webController.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:webController animated:YES];
 
 }

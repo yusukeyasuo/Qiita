@@ -48,6 +48,11 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)saveTags
+{
+    
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -72,6 +77,7 @@
     
     if (indexPath.row < [[SaveToken sharedManager].tokens count])
     {
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cell.textLabel.textColor = [UIColor blackColor];
         cell.textLabel.textAlignment = NSTextAlignmentLeft;
         cell.textLabel.text = [[SaveToken sharedManager].url_names objectAtIndex:indexPath.row];
@@ -131,6 +137,7 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
     if (indexPath.row < [[SaveToken sharedManager].tokens count]) {
+        [self saveTags];
         [[SaveToken sharedManager] set_current_token:indexPath];
         [self.navigationController dismissViewControllerAnimated:YES completion:nil];
     } else {

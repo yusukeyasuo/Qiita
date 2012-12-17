@@ -13,6 +13,7 @@
 #import "TokensViewController.h"
 #import "PostViewController.h"
 #import "SaveToken.h"
+#import "FollowingTag.h"
 
 @interface StockViewController ()
 
@@ -34,7 +35,6 @@
 {
     [super viewDidLoad];
     _loading = 1;
-    _imageDict = [[NSMutableDictionary alloc] init];
     
     // 投稿ボタンの表示
     UIBarButtonItem *postButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCompose
@@ -49,6 +49,7 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
+    [self.navigationController setToolbarHidden:YES animated:NO];
     [[SaveToken sharedManager] load];
     if (![SaveToken sharedManager].tokens.count) {
         UIViewController *tokensController = [[TokensViewController alloc] initWithNibName:@"TokensViewController" bundle:nil];
@@ -86,6 +87,7 @@
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
     _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
     _page = 1;
+    _imageDict = [[NSMutableDictionary alloc] init];
 }
 
 // 続きを読み込む
@@ -154,11 +156,7 @@
 
 - (void)downloaderDidFailed:(Downloader *)downloader withError:(NSError *)error
 {
-    [[[UIAlertView alloc] initWithTitle:@"Error"
-                                message:error.localizedDescription
-                               delegate:nil
-                      cancelButtonTitle:@"OK"
-                      otherButtonTitles:nil] show];
+    NSLog(@"%@", error);
 }
 
 
@@ -212,22 +210,61 @@
     cell.createdLabel.frame = CGRectMake(40.0, 27.0+labelSize.height, 250.0, 15.0);
     cell.createdLabel.text = [keyword objectForKey:@"created_at"];
     
+    CGSize urlnameLabelSize = [[user objectForKey:@"url_name"] sizeWithFont:[UIFont systemFontOfSize:15]
+                                                          constrainedToSize:CGSizeMake(250, 1000)
+                                                              lineBreakMode:NSLineBreakByWordWrapping];
+    cell.urlnameLabel.frame = CGRectMake(40.0, 4.0, urlnameLabelSize.width + 15.0, 16.0);
     cell.urlnameLabel.text = [user objectForKey:@"url_name"];
     cell.urlnameLabel.userInteractionEnabled = YES;
     [cell.urlnameLabel addGestureRecognizer:
      [[UITapGestureRecognizer alloc]
       initWithTarget:self action:@selector(leftAction:)]];
     
-    if (indexPath.row == _jsonObject.count) {
-        
+    NSArray *tags = [keyword objectForKey:@"tags"];
+    BOOL flg = false;
+    for (NSDictionary *dict in [FollowingTag sharedManager].tags) {
+        if ([[[tags objectAtIndex:0] objectForKey:@"name"] isEqualToString:[dict objectForKey:@"name"]]) {
+            flg = true;
+        }
+    }
+    CGSize tagLabelSize = [[[tags objectAtIndex:0] objectForKey:@"name"] sizeWithFont:[UIFont systemFontOfSize:15]
+                                                                    constrainedToSize:CGSizeMake(250, 1000)
+                                                                        lineBreakMode:NSLineBreakByWordWrapping];
+    cell.tagLabel.frame = CGRectMake(cell.urlnameLabel.frame.origin.x + cell.urlnameLabel.frame.size.width, 4.0, tagLabelSize.width + 10.0, 16.0);
+    cell.tagLabel.text = [[tags objectAtIndex:0] objectForKey:@"name"];
+    if (flg) {
+        cell.tagLabel.backgroundColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+    } else {
+        cell.tagLabel.backgroundColor = [UIColor lightGrayColor];
     }
     
+    if (tags.count > 1) {
+        BOOL flg = false;
+        for (NSDictionary *dict in [FollowingTag sharedManager].tags) {
+            if ([[[tags objectAtIndex:1] objectForKey:@"name"] isEqualToString:[dict objectForKey:@"name"]]) {
+                flg = true;
+            }
+        }
+        CGSize tag2LabelSize = [[[tags objectAtIndex:1] objectForKey:@"name"] sizeWithFont:[UIFont systemFontOfSize:15]
+                                                                         constrainedToSize:CGSizeMake(250, 1000)
+                                                                             lineBreakMode:NSLineBreakByWordWrapping];
+        cell.tag2Label.frame = CGRectMake(cell.tagLabel.frame.origin.x + cell.tagLabel.frame.size.width + 10.0, 4.0, tag2LabelSize.width + 10.0, 16.0);
+        cell.tag2Label.text = [[tags objectAtIndex:1] objectForKey:@"name"];
+        if (flg) {
+            cell.tag2Label.backgroundColor = [UIColor colorWithRed:0.392 green:0.788 blue:0.078 alpha:1];
+        } else {
+            cell.tag2Label.backgroundColor = [UIColor lightGrayColor];
+        }
+    } else {
+        cell.tag2Label.text = @"";
+        cell.tag2Label.backgroundColor = [UIColor clearColor];
+    }
+
     if (indexPath.row == (_page * 20 - 1) && _loading == 1) {
         [self add_row];
         _loading = 0;
         [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     }
-
     
     return cell;
 }
@@ -270,10 +307,13 @@
     NSDictionary *dics = [_jsonObject objectAtIndex:indexPath.row];
     NSString *url = [dics objectForKey:@"url"];
     NSString *pageTitle = [dics objectForKey:@"title"];
+    NSString *uuid = [dics objectForKey:@"uuid"];
     
     WebViewController *webController = [[WebViewController alloc] initWithNibName:@"WebViewController" bundle:nil];
     webController._webItem = url;
     webController.pageTitle = pageTitle;
+    webController.uuid = uuid;
+    webController.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:webController animated:YES];
 }
 

@@ -12,14 +12,18 @@
 
 @interface CatalogViewController : UITableViewController <DownLoaderDelegate>
 {
-    NSString *_searchWord;
+    NSString *_page_title;
+    NSString *_api_url;
     NSArray *_jsonObject;
     NSURLConnection *_connection;
     NSMutableData *_jsonData;
     UIRefreshControl *_refreshControl;
     NSMutableDictionary *_imageDict;
+    int _page;
+    int _loading;
 }
 
-@property (strong, nonatomic) NSString *searchWord;
+@property (strong, nonatomic) NSString *page_title;
+@property (strong, nonatomic) NSString *api_url;
 
 @end
