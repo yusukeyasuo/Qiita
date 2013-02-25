@@ -19,6 +19,10 @@
 		70082A8E166B0F0F00043B46 /* back2.png in Resources */ = {isa = PBXBuildFile; fileRef = 70082A8C166B0F0F00043B46 /* back2.png */; };
 		70082A8F166B0F0F00043B46 /* back2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 70082A8D166B0F0F00043B46 /* back2@2x.png */; };
 		70082A91166B344400043B46 /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70082A90166B344300043B46 /* Social.framework */; };
+		700A8261167F6F7000306899 /* PostViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 700A825F167F6F7000306899 /* PostViewController.m */; };
+		700A8262167F6F7000306899 /* PostViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 700A8260167F6F7000306899 /* PostViewController.xib */; };
+		700A8265167F6FD500306899 /* PostTitleCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 700A8264167F6FD500306899 /* PostTitleCell.m */; };
+		700A8267167F702200306899 /* PostTitle.xib in Resources */ = {isa = PBXBuildFile; fileRef = 700A8266167F702200306899 /* PostTitle.xib */; };
 		70236771163AC39A00366495 /* QiitaTable.png in Resources */ = {isa = PBXBuildFile; fileRef = 7023676F163AC39A00366495 /* QiitaTable.png */; };
 		70236772163AC39A00366495 /* QiitaTable@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 70236770163AC39A00366495 /* QiitaTable@2x.png */; };
 		70262697165F7ABF00DBF825 /* SaveToken.m in Sources */ = {isa = PBXBuildFile; fileRef = 70262696165F7ABF00DBF825 /* SaveToken.m */; };
@@ -38,8 +42,6 @@
 		702626B6166019B900DBF825 /* Qiita@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 702626B4166019B900DBF825 /* Qiita@2x.png */; };
 		702626B9166064B500DBF825 /* post.png in Resources */ = {isa = PBXBuildFile; fileRef = 702626B7166064B500DBF825 /* post.png */; };
 		702626BA166064B500DBF825 /* post@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 702626B8166064B500DBF825 /* post@2x.png */; };
-		702626BE1660694500DBF825 /* PostViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 702626BC1660694400DBF825 /* PostViewController.m */; };
-		702626BF1660694500DBF825 /* PostViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 702626BD1660694500DBF825 /* PostViewController.xib */; };
 		702627421661BAF200DBF825 /* TokensViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 702627401661BAF100DBF825 /* TokensViewController.m */; };
 		702627431661BAF200DBF825 /* TokensViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 702627411661BAF100DBF825 /* TokensViewController.xib */; };
 		703EA10116338754002AFD9F /* QiitaEntryCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 703EA10016338753002AFD9F /* QiitaEntryCell.m */; };
@@ -85,6 +87,12 @@
 		70082A8C166B0F0F00043B46 /* back2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back2.png; sourceTree = "<group>"; };
 		70082A8D166B0F0F00043B46 /* back2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "back2@2x.png"; sourceTree = "<group>"; };
 		70082A90166B344300043B46 /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		700A825E167F6F7000306899 /* PostViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostViewController.h; sourceTree = "<group>"; };
+		700A825F167F6F7000306899 /* PostViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostViewController.m; sourceTree = "<group>"; };
+		700A8260167F6F7000306899 /* PostViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PostViewController.xib; sourceTree = "<group>"; };
+		700A8263167F6FD500306899 /* PostTitleCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostTitleCell.h; sourceTree = "<group>"; };
+		700A8264167F6FD500306899 /* PostTitleCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostTitleCell.m; sourceTree = "<group>"; };
+		700A8266167F702200306899 /* PostTitle.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PostTitle.xib; sourceTree = "<group>"; };
 		7023676F163AC39A00366495 /* QiitaTable.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = QiitaTable.png; sourceTree = "<group>"; };
 		70236770163AC39A00366495 /* QiitaTable@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "QiitaTable@2x.png"; sourceTree = "<group>"; };
 		70262695165F7ABF00DBF825 /* SaveToken.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveToken.h; sourceTree = "<group>"; };
@@ -107,9 +115,6 @@
 		702626B4166019B900DBF825 /* Qiita@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Qiita@2x.png"; sourceTree = "<group>"; };
 		702626B7166064B500DBF825 /* post.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = post.png; sourceTree = "<group>"; };
 		702626B8166064B500DBF825 /* post@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "post@2x.png"; sourceTree = "<group>"; };
-		702626BB1660694400DBF825 /* PostViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostViewController.h; sourceTree = "<group>"; };
-		702626BC1660694400DBF825 /* PostViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostViewController.m; sourceTree = "<group>"; };
-		702626BD1660694500DBF825 /* PostViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PostViewController.xib; sourceTree = "<group>"; };
 		7026273F1661BAF000DBF825 /* TokensViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TokensViewController.h; sourceTree = "<group>"; };
 		702627401661BAF100DBF825 /* TokensViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TokensViewController.m; sourceTree = "<group>"; };
 		702627411661BAF100DBF825 /* TokensViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TokensViewController.xib; sourceTree = "<group>"; };
@@ -196,6 +201,9 @@
 				703EA10016338753002AFD9F /* QiitaEntryCell.m */,
 				70740AFB163ECE7D00F0A5CE /* QiitaTagCell.h */,
 				70740AFC163ECE7E00F0A5CE /* QiitaTagCell.m */,
+				700A8263167F6FD500306899 /* PostTitleCell.h */,
+				700A8264167F6FD500306899 /* PostTitleCell.m */,
+				700A8266167F702200306899 /* PostTitle.xib */,
 			);
 			name = views;
 			sourceTree = "<group>";
@@ -211,9 +219,9 @@
 				702626AE166015EE00DBF825 /* LoginViewController.h */,
 				702626AF166015EE00DBF825 /* LoginViewController.m */,
 				702626B0166015EF00DBF825 /* LoginViewController.xib */,
-				702626BB1660694400DBF825 /* PostViewController.h */,
-				702626BC1660694400DBF825 /* PostViewController.m */,
-				702626BD1660694500DBF825 /* PostViewController.xib */,
+				700A825E167F6F7000306899 /* PostViewController.h */,
+				700A825F167F6F7000306899 /* PostViewController.m */,
+				700A8260167F6F7000306899 /* PostViewController.xib */,
 				702626A5165FCC4F00DBF825 /* HomeViewController.h */,
 				702626A6165FCC4F00DBF825 /* HomeViewController.m */,
 				702626A7165FCC4F00DBF825 /* HomeViewController.xib */,
@@ -404,7 +412,6 @@
 				702626B6166019B900DBF825 /* Qiita@2x.png in Resources */,
 				702626B9166064B500DBF825 /* post.png in Resources */,
 				702626BA166064B500DBF825 /* post@2x.png in Resources */,
-				702626BF1660694500DBF825 /* PostViewController.xib in Resources */,
 				702627431661BAF200DBF825 /* TokensViewController.xib in Resources */,
 				70ED4A411663D97700D39BEF /* stock.png in Resources */,
 				70ED4A421663D97700D39BEF /* stock@2x.png in Resources */,
@@ -418,6 +425,8 @@
 				70082A8E166B0F0F00043B46 /* back2.png in Resources */,
 				70082A8F166B0F0F00043B46 /* back2@2x.png in Resources */,
 				70F00D5A166E38D300B7B7B6 /* UserViewController.xib in Resources */,
+				700A8262167F6F7000306899 /* PostViewController.xib in Resources */,
+				700A8267167F702200306899 /* PostTitle.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -440,12 +449,13 @@
 				70262697165F7ABF00DBF825 /* SaveToken.m in Sources */,
 				702626A8165FCC5000DBF825 /* HomeViewController.m in Sources */,
 				702626B1166015EF00DBF825 /* LoginViewController.m in Sources */,
-				702626BE1660694500DBF825 /* PostViewController.m in Sources */,
 				702627421661BAF200DBF825 /* TokensViewController.m in Sources */,
 				70ED4A3D1663C2AA00D39BEF /* Downloader.m in Sources */,
 				70082A681665039E00043B46 /* StockViewController.m in Sources */,
 				70082A7F166A69DF00043B46 /* FollowingTag.m in Sources */,
 				70F00D59166E38D300B7B7B6 /* UserViewController.m in Sources */,
+				700A8261167F6F7000306899 /* PostViewController.m in Sources */,
+				700A8265167F6FD500306899 /* PostTitleCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
